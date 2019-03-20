@@ -6,12 +6,23 @@ var expressWs = require('express-ws')(app);
 
 app.use(express.static('public'));
 
+function heartbeat() {
+  this.isAlive = true;
+}
+
+function noop() {}
+
+const wss = expressWs.getWss();
+
 app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, './public/index.html'));
-})
+});
 
 app.ws('/blackjack', function(ws, req) {
     ws.id = Math.random().toString(36).substr(2, 9);
+    ws.on('open', ()=>{
+        ws.isAlive = true;
+    })
     ws.on('message', (msg) => {
         console.log(msg);
         let jsonMsg;
@@ -38,7 +49,24 @@ app.ws('/blackjack', function(ws, req) {
                     break;
             }
     });
+    ws.on('close', ()=>{
+        blackjack.removePlayer(ws.id);
+    });
+    
+    ws.on('pong', heartbeat);
 });
+
+const interval = setInterval(function ping() {
+  wss.clients.forEach(function each(ws) {
+    if (ws.isAlive === false) {
+        blackjack.removePlayer(ws.id);
+        return ws.terminate();
+    }
+    ws.isAlive = false;
+    ws.ping(noop);
+  });
+}, 10000);
+
 
 app.listen(process.env.PORT, process.env.IP, () => {
     console.log("running on " + process.env.IP + ":" +

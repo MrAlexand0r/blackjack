@@ -22,7 +22,8 @@ module.exports = {
     start: (id, decks) => start(id, decks),
     bet: (id, amount) => bet(id, amount),
     turn: (id, move) => turn(id, move),
-    findPlayerById: (id) => findPlayerById(id)
+    findPlayerById: (id) => findPlayerById(id),
+    removePlayer: (id) => removePlayer(id)
 };
 
 
@@ -52,6 +53,11 @@ function joinPlayer(startingchips, ws, name) {
     });
     sendAll(JSON.stringify({ "type": "joined", "name": name }));
     sendPlayerList();
+}
+
+function removePlayer(id) {
+    console.log("removing: " + id);
+    players.splice(players.findIndex(x => x.id == id), 1);
 }
 
 function start(id, decks) {
