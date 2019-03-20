@@ -119,11 +119,15 @@ function getCardValue(card) {
 function turn(id, move) {
     let nextplayer = true;
     if (players[currentPlayer].ws.id !== id) {
-        sendError(findPlayerById(id), "It's not your turn!");
+        sendError(findPlayerById(id).ws, "It's not your turn!");
         return;
     }
     if (!gameStarted) {
         sendError(players[currentPlayer].ws, "The game hasn't started yet!");
+        return;
+    }
+    if (players[currentPlayer].status !== status.PLAYING) {
+        sendError(players[currentPlayer].ws, "Wait for the next round!");
         return;
     }
     switch (move) {
@@ -144,12 +148,14 @@ function turn(id, move) {
     if (players.filter(x => x.status === status.PLAYING).length > 0) {
         if (nextplayer) {
             currentPlayer++;
-            sendTurn();
         }
-        else sendTurn();
+        sendTurn();
+        sendPlayerList();
     }
     else {
         // TODO draw for dealer and pay out
+        
+        sendPlayerList();
     }
 }
 
