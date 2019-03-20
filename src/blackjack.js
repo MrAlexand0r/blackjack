@@ -107,7 +107,10 @@ function deal() {
         let card = deck.pop();
         players[i % players.length].cards.push(card);
         players[i % players.length].cardValue += getCardValue(card);
-        players[i % players.length].status = status.PLAYING;
+        if(players[i % players.length].cardValue === 21) 
+            players[i % players.length].status = status.BLACKJACK;
+        else
+            players[i % players.length].status = status.PLAYING;
     }
 }
 
@@ -151,36 +154,7 @@ function turn(id, move) {
             else nextplayer = false;
             break;
     }
-    if (players.filter(x => x.status === status.PLAYING).length > 0) {
-        
-        console.log("playermove: " + move + " nextplayer: " + nextplayer);
-        if (nextplayer) {
-            currentPlayer++;
-        } 
-        sendPlayerList();
-        sendTurn();
-    }
-    else {
-        while(dealer.cardValue < 17){
-            let card = deck.pop();
-            dealer.cards.push(card);
-            dealer.cardValue += getCardValue(card);
-        }
-        for(let i = 0; i < players.length; i++){
-            console.log()
-            if(players[i].status === status.BUSTED || (dealer.cardValue < 22 && players[i].cardValue < dealer.cardValue)){
-                players[i].chips -= players[i].currentBet;
-            }
-            else if((players[i].currentBet > 0 && players[i].cardValue > dealer.cardValue) || dealer.cardValue > 21){
-                players[i].chips += players[i].currentBet;
-            }
-            players[i].currentBet = 0;
-            players[i].status = status.WAITING;
-            gameStarted = false;
-            currentPlayer = -1;
-        }
-        sendPlayerList();
-    }
+    checkGameEnd(nextplayer);
 }
 
 function bet(id, amount) {
@@ -212,13 +186,46 @@ function bet(id, amount) {
         players.forEach(x => {
             x.cards = [];
             x.cardValue = 0;
-        })
+        });
+        dealer.cards = [];
         deal();
 
         sendPlayerList();
         gameStarted = true;
-        currentPlayer = 0;
+        checkGameEnd(true);
+    }
+}
+
+function checkGameEnd(nextplayer){
+    if (players.filter(x => x.status === status.PLAYING).length > 0) {
+        if (nextplayer) {
+            while(players[++currentPlayer].status === status.BLACKJACK);
+        } 
+        sendPlayerList();
         sendTurn();
+    }
+    else {
+        while(dealer.cardValue < 17){
+            let card = deck.pop();
+            dealer.cards.push(card);
+            dealer.cardValue += getCardValue(card);
+        }
+        for(let i = 0; i < players.length; i++){
+            if(players[i].status === status.BLACKJACK && dealer.cardValue < 21){
+                players[i].chips += Math.floor(players[i].currentBet * (3/2));
+            }
+            else if(players[i].status === status.BUSTED || (dealer.cardValue < 22 && players[i].cardValue < dealer.cardValue)){
+                players[i].chips -= players[i].currentBet;
+            }
+            else if((players[i].currentBet > 0 && players[i].cardValue > dealer.cardValue) || dealer.cardValue > 21){
+                players[i].chips += players[i].currentBet;
+            }
+            players[i].currentBet = 0;
+            players[i].status = status.WAITING;
+            gameStarted = false;
+            currentPlayer = -1;
+        }
+        sendPlayerList();
     }
 }
 
@@ -272,5 +279,6 @@ function sendError(ws, message) {
 }
 
 function sendTurn() {
+    console.log(currentPlayer);
     sendAll(JSON.stringify({ "type": "turn", "name": players[currentPlayer].name }));
 }
