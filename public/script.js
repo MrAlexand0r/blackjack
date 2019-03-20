@@ -25,11 +25,12 @@ let players = [];
 
 socket.addEventListener('open', function(event) {
     console.log("connected");
+    heartbeat();
     $("#enter").prop('disabled', false);
 });
 
 socket.addEventListener('message', function(event) {
-    $(document.body).append(`<p>${event.data}</p>`);
+    $("#socketlog").append(`<p>${event.data}</p>`);
     var jsonMsg = JSON.parse(event.data);
     switch (jsonMsg.type) {
         case "joined":
@@ -54,5 +55,12 @@ socket.addEventListener('message', function(event) {
 
 window.onbeforeunload = function() {
     socket.onclose = function() {}; // disable onclose handler first
-    socket.close();
+    socket.terminate();
 };
+
+
+socket.addEventListener('close', function clear() {
+    $("#socketlog").empty();
+    $("#playerlist").empty();
+    $("#socketlog").append("<p>Lost connection</p>");
+});
