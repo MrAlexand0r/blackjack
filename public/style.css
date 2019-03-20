@@ -1,0 +1,41 @@
+
+@font-face {
+  font-family: "SCRIPTINA";
+  src: url("./res/SCRIPTIN.ttf");
+}
+
+.value{
+  font-family: "SCRIPTINA";
+}
+
+.suit {
+  background-image: url('./res/suits.png');
+  background-repeat: no-repeat;
+  -moz-transform:scale(0.5);
+  -moz-transform-origin: 0 0;
+}
+
+
+.heart {
+    height:110px;
+    width:126px;
+    background-position: -237px -143px;
+}
+
+.club {
+    height:114px;
+    width:106px;
+    background-position: -447px -344px;
+}
+
+.spade {
+    height:130px;
+    width:121px;
+    background-position: -438px -133px;
+}
+
+.diamond {
+    height:137px;
+    width:106px;
+    background-position: -246px -332px;
+}
