@@ -9,9 +9,17 @@ $(document).ready(() => {
     $("#betButton").click(() => {
         socket.send(JSON.stringify({ "type": "bet", "amount": $("#bet").val() }));
     });
+    
+    $("#hit").click(() => {
+        socket.send(JSON.stringify({ "type": "turn", "move":"hit" }));
+    });
+    
+    $("#stand").click(() => {
+        socket.send(JSON.stringify({ "type": "turn", "move":"stand" }));
+    });
 });
 
-const socket = new WebSocket('wss://webscraper-cookiealex.c9users.io:8080/blackjack');
+const socket = new WebSocket('wss://blackjack-cookiealex.c9users.io:8080/blackjack');
 
 let players = [];
 
@@ -32,8 +40,12 @@ socket.addEventListener('message', function(event) {
         case "players":
             $("#playerlist").empty();
             jsonMsg.players.forEach(p => {
-                $("#playerlist").append(`<div>${p.name} ${p.chips} ${p.currentBet} ${p.status}</div>`);
+                $("#playerlist").append(`<div>${p.name} ${p.chips} ${p.currentBet} ${p.status} ${p.cards} ${p.cardValue}</div>`);
             });
+            break;
+        case "turn":
+                $("#hit").prop('disabled', jsonMsg.name !== username);
+                $("#stand").prop('disabled', jsonMsg.name !== username);
             break;
     }
 });
