@@ -25,7 +25,6 @@ let players = [];
 
 socket.addEventListener('open', function(event) {
     console.log("connected");
-    heartbeat();
     $("#enter").prop('disabled', false);
 });
 

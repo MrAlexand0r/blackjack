@@ -4,7 +4,7 @@ var app = express();
 
 var expressWs = require('express-ws')(app);
 
-app.use(express.static('public'));
+app.use(express.static('debug'));
 
 function heartbeat() {
   this.isAlive = true;
@@ -15,7 +15,7 @@ function noop() {}
 const wss = expressWs.getWss();
 
 app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname, './public/index.html'));
+    res.sendFile(path.join(__dirname, './debug/index.html'));
 });
 
 app.ws('/blackjack', function(ws, req) {
