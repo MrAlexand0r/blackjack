@@ -42,6 +42,7 @@ socket.addEventListener('message', function(event) {
             jsonMsg.players.forEach(p => {
                 $("#playerlist").append(`<div>${p.name} ${p.chips} ${p.currentBet} ${p.status} ${p.cards} ${p.cardValue}</div>`);
             });
+            $("#playerlist").append(`<div>dealer: ${jsonMsg.dealer.cards} ${jsonMsg.dealer.cardValue}</div>`);
             break;
         case "turn":
                 $("#hit").prop('disabled', jsonMsg.name !== username);

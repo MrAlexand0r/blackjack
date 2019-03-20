@@ -1,4 +1,4 @@
-let cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K", "A"];
+let cards = [2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K", "A"];
 let suits = ["heart", "club", "spade", "diamond"];
 
 let deck = [];
@@ -8,7 +8,8 @@ let dealer = { cards: [], cardValue: 0 };
 let status = {
     WAITING: 'waiting',
     PLAYING: 'playing',
-    BUSTED: 'busted'
+    BUSTED: 'busted',
+    BLACKJACK: 'blackjack'
 }
 
 let gameStarted = false;
@@ -26,6 +27,11 @@ module.exports = {
 
 
 function joinPlayer(startingchips, ws, name) {
+    name = name.replace(/ {1,}/g," ").trim();
+    if(!name){
+        sendError(ws, "Your name can't be empty!");
+        return;
+    }
     if (findPlayerById(ws.id)) {
         sendError(ws, "You already joined!");
         return;
@@ -118,12 +124,12 @@ function getCardValue(card) {
 
 function turn(id, move) {
     let nextplayer = true;
-    if (players[currentPlayer].ws.id !== id) {
-        sendError(findPlayerById(id).ws, "It's not your turn!");
-        return;
-    }
     if (!gameStarted) {
         sendError(players[currentPlayer].ws, "The game hasn't started yet!");
+        return;
+    }
+    if (players[currentPlayer].ws.id !== id) {
+        sendError(findPlayerById(id).ws, "It's not your turn!");
         return;
     }
     if (players[currentPlayer].status !== status.PLAYING) {
@@ -146,15 +152,33 @@ function turn(id, move) {
             break;
     }
     if (players.filter(x => x.status === status.PLAYING).length > 0) {
+        
+        console.log("playermove: " + move + " nextplayer: " + nextplayer);
         if (nextplayer) {
             currentPlayer++;
-        }
-        sendTurn();
+        } 
         sendPlayerList();
+        sendTurn();
     }
     else {
-        // TODO draw for dealer and pay out
-        
+        while(dealer.cardValue < 17){
+            let card = deck.pop();
+            dealer.cards.push(card);
+            dealer.cardValue += getCardValue(card);
+        }
+        for(let i = 0; i < players.length; i++){
+            console.log()
+            if(players[i].status === status.BUSTED || (dealer.cardValue < 22 && players[i].cardValue < dealer.cardValue)){
+                players[i].chips -= players[i].currentBet;
+            }
+            else if((players[i].currentBet > 0 && players[i].cardValue > dealer.cardValue) || dealer.cardValue > 21){
+                players[i].chips += players[i].currentBet;
+            }
+            players[i].currentBet = 0;
+            players[i].status = status.WAITING;
+            gameStarted = false;
+            currentPlayer = -1;
+        }
         sendPlayerList();
     }
 }
@@ -185,6 +209,10 @@ function bet(id, amount) {
     sendAll(JSON.stringify({ "type": "bet", "name": player.name, "amount": amount }));
     if (players.filter(x => x.currentBet === 0).length == 0) {
         start(1);
+        players.forEach(x => {
+            x.cards = [];
+            x.cardValue = 0;
+        })
         deal();
 
         sendPlayerList();
