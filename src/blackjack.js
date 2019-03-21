@@ -57,7 +57,9 @@ function joinPlayer(startingchips, ws, name) {
 
 function removePlayer(id) {
     console.log("removing: " + id);
-    players.splice(players.findIndex(x => x.id == id), 1);
+    let playerIndex = players.findIndex(x => x.id == id);
+    players.splice(playerIndex, 1);
+    if(playerIndex == currentPlayer) checkGameEnd(true);
 }
 
 function start(id, decks) {
@@ -196,7 +198,7 @@ function bet(id, amount) {
         dealer.cards = [];
         deal();
 
-        sendPlayerList();
+        //sendPlayerList();
         gameStarted = true;
         checkGameEnd(true);
     }
