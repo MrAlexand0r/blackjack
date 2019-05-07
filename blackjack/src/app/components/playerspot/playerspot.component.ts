@@ -15,10 +15,14 @@ export class PlayerspotComponent implements OnInit {
   @Input()
   rotation: number;
   
+  @Input()
+  offsetTop: number;
+  
   constructor() { 
     }
 
   ngOnInit() {
+    console.log(this.offsetTop);
   }
 
 }

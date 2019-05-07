@@ -3,6 +3,10 @@
   <app-header></app-header>  
 </div>
 
-<app-playerspot *ngFor="let player of players; let i = index" [rotation]="rotations[i]" [player]="player"></app-playerspot>
+<div class="row centered" style="display:flex;justify-content:center;align-items:center;margin-left: -75px;"> 
+    <div class="col-md-2 col-centered" *ngFor="let player of players; let i = index" >
+        <app-playerspot [rotation]="rotations[i]" [offsetTop]="offset[i]" [player]="player"></app-playerspot>
+    </div>  
+</div>
 
 <router-outlet></router-outlet>

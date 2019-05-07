@@ -212,7 +212,7 @@ function checkGameEnd(nextplayer){
         sendPlayerList();
         sendTurn();
     }
-    else {
+    else if(players.length > 0){
         while(dealer.cardValue < 17){
             let card = deck.pop();
             dealer.cards.push(card);
